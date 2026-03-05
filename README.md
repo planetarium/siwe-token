@@ -81,6 +81,35 @@ siwe-token auth \
 
 Generates the message, passes it to the sign command via `$SIWE_MESSAGE` env var, and outputs the final token. One command, done.
 
+If the sign command outputs JSON (e.g. `{"signature":"0x..."}`), use `--sign-format json` to extract the signature automatically:
+
+```bash
+siwe-token auth \
+  --address 0xD0e3... \
+  --domain app.example.com \
+  --uri https://app.example.com \
+  --sign-command 'a2a-wallet sign --message "$SIWE_MESSAGE" --json' \
+  --sign-format json
+```
+
+| `--sign-format` | Expected output | Default |
+|-----------------|----------------|---------|
+| `raw` | Hex signature string (`0x...`) | Yes |
+| `json` | JSON with `"signature"` field (`{"signature":"0x..."}`) | |
+
+## Usage with a2a-wallet
+
+```bash
+ADDRESS=$(a2a-wallet whoami | grep Wallet | awk '{print $2}')
+
+siwe-token auth \
+  --address "$ADDRESS" \
+  --domain app.example.com \
+  --uri https://app.example.com \
+  --sign-command 'a2a-wallet sign --message "$SIWE_MESSAGE" --json' \
+  --sign-format json
+```
+
 ## Usage with Foundry (`cast`)
 
 ```bash
