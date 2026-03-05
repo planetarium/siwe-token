@@ -6,6 +6,20 @@ SIWE tokens are base64url-encoded `{ message, signature }` pairs. Any service ca
 
 ## Install
 
+One-line install (macOS / Linux):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/planetarium/siwe-token/main/install.sh | sh
+```
+
+Custom install directory:
+
+```bash
+INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/planetarium/siwe-token/main/install.sh | sh
+```
+
+Via cargo:
+
 ```bash
 cargo install --git https://github.com/planetarium/siwe-token
 ```
