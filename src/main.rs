@@ -99,6 +99,9 @@ enum Cmd {
         /// EIP-155 chain ID
         #[arg(long, default_value_t = 1)]
         chain_id: u64,
+        /// Format of sign command output: "raw" (hex string) or "json" ({"signature":"0x..."})
+        #[arg(long, default_value = "raw")]
+        sign_format: String,
     },
 }
 
@@ -271,6 +274,21 @@ fn cmd_verify(token: &str) -> Result<(), String> {
     Ok(())
 }
 
+fn extract_signature(raw: &str, format: &str) -> Result<String, String> {
+    match format {
+        "raw" => Ok(raw.to_string()),
+        "json" => {
+            let v: serde_json::Value =
+                serde_json::from_str(raw).map_err(|e| format!("sign output is not valid JSON: {e}"))?;
+            v.get("signature")
+                .and_then(|s| s.as_str())
+                .map(|s| s.to_string())
+                .ok_or_else(|| "sign output JSON has no \"signature\" field".to_string())
+        }
+        _ => Err(format!("unknown --sign-format: {format} (use \"raw\" or \"json\")")),
+    }
+}
+
 fn cmd_auth(
     address: &str,
     domain: &str,
@@ -279,6 +297,7 @@ fn cmd_auth(
     ttl: &str,
     statement: &str,
     chain_id: u64,
+    sign_format: &str,
 ) -> Result<(), String> {
     let msg = make_message(address, domain, uri, ttl, statement, chain_id)?;
 
@@ -294,12 +313,14 @@ fn cmd_auth(
         return Err(format!("sign command failed: {}", stderr.trim()));
     }
 
-    let sig = String::from_utf8_lossy(&output.stdout)
+    let raw = String::from_utf8_lossy(&output.stdout)
         .trim()
         .to_string();
-    if sig.is_empty() {
+    if raw.is_empty() {
         return Err("sign command returned empty output".into());
     }
+
+    let sig = extract_signature(&raw, sign_format)?;
 
     println!("{}", encode_token(&msg, &sig));
     Ok(())
@@ -335,7 +356,8 @@ fn run() -> Result<(), String> {
             ttl,
             statement,
             chain_id,
-        } => cmd_auth(&address, &domain, &uri, &sign_command, &ttl, &statement, chain_id),
+            sign_format,
+        } => cmd_auth(&address, &domain, &uri, &sign_command, &ttl, &statement, chain_id, &sign_format),
     }
 }
 
