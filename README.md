@@ -15,7 +15,7 @@ curl -fsSL https://raw.githubusercontent.com/planetarium/siwe-token/main/install
 Custom install directory:
 
 ```bash
-INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/planetarium/siwe-token/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/planetarium/siwe-token/main/install.sh | INSTALL_DIR=~/.local/bin sh
 ```
 
 Via cargo:
